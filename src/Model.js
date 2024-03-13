@@ -134,3 +134,30 @@ export class Frame extends Model {
 		this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 	}
 }
+export class TexMap extends Model {
+	setup() {
+		const data = new Float32Array([
+			-0.5, -0.5, 0.0, 0.0, 0.0, 0.5, -0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.0,
+			1.0, 1.0, -0.5, -0.5, 0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 1.0, 1.0, -0.5,
+			0.5, 0.0, 0.0, 1.0,
+		]);
+
+		this.vbo = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vbo);
+
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
+
+		this.vao = this.gl.createVertexArray();
+		this.gl.bindVertexArray(this.vao);
+
+		this.gl.enableVertexAttribArray(0);
+		this.gl.vertexAttribPointer(0, 3, this.gl.FLOAT, false, 20, 0);
+
+		this.gl.enableVertexAttribArray(1);
+		this.gl.vertexAttribPointer(1, 2, this.gl.FLOAT, false, 20, 12);
+	}
+	render() {
+		this.gl.bindVertexArray(this.vao);
+		this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+	}
+}
