@@ -5,11 +5,16 @@ export default class Texture {
 		this.texture = null;
 	}
 
+	bind() {
+		this.gl.activeTexture(this.gl.TEXTURE0 + this.unit);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+	}
+
 	createTexture(imageUrl) {
 		const image = new Image();
 		image.onload = () => {
 			this.texture = this.gl.createTexture();
-			this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
+			this.bind();
 
 			this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -45,10 +50,5 @@ export default class Texture {
 			this.gl.generateMipmap(this.gl.TEXTURE_2D);
 		};
 		image.src = imageUrl;
-	}
-
-	bind() {
-		this.gl.activeTexture(this.gl.TEXTURE0 + this.unit);
-		this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
 	}
 }

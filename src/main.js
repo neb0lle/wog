@@ -1,6 +1,6 @@
 import Shader from "./Shader";
 import Texture from "./Texture";
-import { Triangle, TexMap } from "./Model";
+import { Triangle, TexMap, Mesh } from "./Model";
 import { keys, mouseX, mouseY } from "./Input";
 
 import vertexShaderSource from "./shaders/vert.glsl";
@@ -31,7 +31,7 @@ if (gl === null) {
 	globalShader.createShaders(vert, frag0);
 
 	// DATA
-	const data = new TexMap(gl);
+	const data = new Mesh(gl);
 	data.setup();
 
 	// TEXTURE

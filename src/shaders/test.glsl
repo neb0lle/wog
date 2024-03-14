@@ -8,10 +8,11 @@ uniform vec2 uResolution;
 uniform vec2 uMouse;
 uniform vec2 uPos;
 
-uniform sampler2D uSampler;
+// uniform sampler2D uSampler;
 
-in vec2 vTextureCoord;
+// in vec2 vTextureCoord;
 
 void main() {
-	fragColor = vec4(texture(uSampler,vTextureCoord).gbr, 1.0);
+	// fragColor = vec4(0.0,texture(uSampler,vTextureCoord).b,0.0, 1.0);
+	fragColor = vec4(1.0);
 }
