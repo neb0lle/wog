@@ -31,7 +31,7 @@ if (gl === null) {
 	globalShader.createShaders(vert, frag0);
 
 	// DATA
-	const data = new Mesh(gl);
+	const data = new TexMap(gl);
 	data.setup();
 
 	// TEXTURE
