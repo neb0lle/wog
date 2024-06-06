@@ -10,7 +10,7 @@ export default class Texture {
 		this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture);
 	}
 
-	createTexture(imageUrl) {
+	createTex(imageUrl = null, width, height) {
 		const image = new Image();
 		image.onload = () => {
 			this.texture = this.gl.createTexture();
@@ -21,7 +21,7 @@ export default class Texture {
 			this.gl.texParameteri(
 				this.gl.TEXTURE_2D,
 				this.gl.TEXTURE_WRAP_S,
-				this.gl.REPEAT,
+				this.gl.CLAMP_TO_EDGE,
 			);
 			this.gl.texParameteri(
 				this.gl.TEXTURE_2D,
@@ -31,18 +31,21 @@ export default class Texture {
 			this.gl.texParameteri(
 				this.gl.TEXTURE_2D,
 				this.gl.TEXTURE_MIN_FILTER,
-				this.gl.NEAREST,
+				this.gl.LINEAR,
 			);
 			this.gl.texParameteri(
 				this.gl.TEXTURE_2D,
 				this.gl.TEXTURE_MAG_FILTER,
-				this.gl.NEAREST,
+				this.gl.LINEAR,
 			);
 
 			this.gl.texImage2D(
 				this.gl.TEXTURE_2D,
 				0,
 				this.gl.RGBA,
+				width,
+				height,
+				0,
 				this.gl.RGBA,
 				this.gl.UNSIGNED_BYTE,
 				image,

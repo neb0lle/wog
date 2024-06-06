@@ -14,5 +14,5 @@ in vec2 vTextureCoord;
 
 void main() {
 	vec4 s = vec4(texture(uSampler,vec2(vTextureCoord.x,vTextureCoord.y)));
-	fragColor = vec4(s.rgb+vec3(.1),1.0);
+	fragColor = vec4(s.b,s.b,s.b,1.0);
 }

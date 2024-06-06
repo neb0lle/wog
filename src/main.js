@@ -1,13 +1,12 @@
 import Shader from "./Shader";
 import Texture from "./Texture";
-import { Triangle, TexMap, Mesh } from "./Model";
+import { Frame } from "./Model";
 import { keys, mouseX, mouseY } from "./Input";
 
 import vertexShaderSource from "./shaders/vert.glsl";
-import fragmentShaderSource from "./shaders/test.glsl";
+import fragmentShaderSource from "./shaders/sdf.glsl";
 
-import sampleTexture from "./tex.jpg";
-// import sampleTexture from "./tex2.png";
+// import sampleTexture from "./tex2.jpg";
 
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
@@ -31,12 +30,12 @@ if (gl === null) {
 	globalShader.createShaders(vert, frag0);
 
 	// DATA
-	const data = new TexMap(gl);
+	const data = new Frame(gl);
 	data.setup();
 
 	// TEXTURE
-	const texture = new Texture(gl, 0);
-	texture.createTexture(sampleTexture);
+	// const texture = new Texture(gl, 0);
+	// texture.createTex(sampleTexture);
 
 	gl.useProgram(globalShader.program);
 
@@ -68,10 +67,105 @@ if (gl === null) {
 	}
 	const uPosLocation = gl.getUniformLocation(globalShader.program, "uPos");
 
-	gl.useProgram(globalShader.program);
+	const kernels = {
+		normal: [
+			0, 0, 0,
+			0, 1, 0,
+			0, 0, 0,
+		],
+		gaussianBlur: [
+			1, 2, 1,
+			2, 4, 2,
+			1, 2, 1,
+		],
+		gaus3: [
+			0, 0, 0, 0, 0,
+			0, 1, 2, 1, 0,
+			0, 2, 4, 2, 0,
+			0, 1, 2, 1, 0,
+			0, 0, 0, 0, 0
+		],
+		biggaussianBlur: [
+			0, 1, 2, 1, 0,
+			1, 2, 4, 2, 1,
+			2, 4, 8, 4, 2,
+			1, 2, 4, 2, 1,
+			0, 1, 2, 1, 0
+		],
+		unsharpen: [
+			-1, -1, -1,
+			-1, 9, -1,
+			-1, -1, -1,
+		],
+		sharpen: [
+			0, -1, 0,
+			-1, 5, -1,
+			0, -1, 0,
+		],
+		edgeDetect1: [
+			0, -1, 0,
+			-1, 4, -1,
+			0, -1, 0,
+		],
+		edgeDetect2: [
+			-1, -1, -1,
+			-1, 8, -1,
+			-1, -1, -1,
+		],
+		edgeDetect3: [
+			-5, 0, 0,
+			0, 0, 0,
+			0, 0, 5,
+		],
+		edgeDetect4: [
+			-1, -1, -1,
+			0, 0, 0,
+			1, 1, 1,
+		],
+		edgeDetect5: [
+			-1, -1, -1,
+			2, 2, 2,
+			-1, -1, -1,
+		],
+		edgeDetect6: [
+			-5, -5, -5,
+			-5, 39, -5,
+			-5, -5, -5,
+		],
+		boxBlur: [
+			1, 1, 1,
+			1, 1, 1,
+			1, 1, 1,
+		],
+		triangleBlur: [
+			0.0625, 0.125, 0.0625,
+			0.125, 0.25, 0.125,
+			0.0625, 0.125, 0.0625,
+		],
+		emboss: [
+			-2, -1, 0,
+			-1, 1, 1,
+			0, 1, 2,
+		],
+	};
+
+	function computeKernelWeight(kernel) {
+		var weight = kernel.reduce(function(prev, curr) {
+			return prev + curr;
+		});
+		return weight <= 0 ? 1 : weight;
+	}
+	const uKernelLocation = gl.getUniformLocation(globalShader.program, "uKernel");
+	const uKernelWeightLocation = gl.getUniformLocation(globalShader.program, "uKernelWeight");
+
+	const cc = kernels.sharpen;
+	gl.uniform1fv(uKernelLocation, cc);
+	gl.uniform1f(uKernelWeightLocation, computeKernelWeight(cc));
+
 	gl.uniform2fv(uResolutionLocation, resolution);
 
-	gl.clearColor(0, 0, 0, 1);
+	gl.clearColor(1, 1, 1, 1);
+
 	function renderLoop() {
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -88,7 +182,6 @@ if (gl === null) {
 			mouseX / resolution[0] - 0.5,
 			0.5 - mouseY / resolution[1],
 		);
-
 		data.render();
 
 		requestAnimationFrame(renderLoop);

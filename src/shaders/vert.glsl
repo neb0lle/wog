@@ -13,7 +13,6 @@ out vec2 vTextureCoord;
 void main() {
 	gl_Position = position;
 	vTextureCoord = texCoord;
-
 }
 	// gl_Position = vec4(position.x*cos(uTime*position.x),position.y*cos(uTime*position.y),position.z, 1.0);
 	// gl_Position = vec4(position.xy+uMouse, position.z, 1.0);

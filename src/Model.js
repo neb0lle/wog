@@ -115,8 +115,12 @@ export class Mesh extends Model {
 export class Frame extends Model {
 	setup() {
 		const data = new Float32Array([
-			-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0,
-			1.0, 1.0, 0.0, -1.0, 1.0, 0.0,
+			-1.0, -1.0, 0.0,
+			1.0, -1.0, 0.0,
+			1.0, 1.0, 0.0,
+			-1.0, -1.0, 0.0,
+			1.0, 1.0, 0.0,
+			-1.0, 1.0, 0.0,
 		]);
 		this.vbo = this.gl.createBuffer();
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vbo);
@@ -137,9 +141,12 @@ export class Frame extends Model {
 export class TexMap extends Model {
 	setup() {
 		const data = new Float32Array([
-			-0.5, -0.5, 0.0, 0.0, 0.0, 0.5, -0.5, 0.0, 1.0, 0.0, 0.5, 0.5, 0.0,
-			1.0, 1.0, -0.5, -0.5, 0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 1.0, 1.0, -0.5,
-			0.5, 0.0, 0.0, 1.0,
+			-1, -1, 0, 0, 0,
+			1, -1, 0, 1, 0,
+			1, 1, 0, 1, 1,
+			-1, -1, 0, 0, 0,
+			1, 1, 0, 1, 1,
+			-1, 1, 0, 0, 1,
 		]);
 
 		this.vbo = this.gl.createBuffer();
