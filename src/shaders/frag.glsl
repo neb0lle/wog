@@ -1,43 +1,24 @@
 #version 300 es
-precision highp float;
+precision mediump float;
 
-out vec4 fragColor;
+uniform sampler2D uSampler;
+uniform vec2 uScale;
 
-in vec3 vColor;
+out vec4 outColor;
 
-uniform float uTime;
-uniform vec2 uResolution;
-uniform vec2 uMouse;
-uniform vec2 uPos;
-
-vec3 palette( float t ) {
-    vec3 a = vec3(0.5, 0.5, 0.5);
-    vec3 b = vec3(0.5, 0.5, 0.5);
-    vec3 c = vec3(1.0, 1.0, 1.0);
-    vec3 d = vec3(0.263,0.416,0.557);
-
-    return b + a*cos( 6.28318*(d*t+c) );
+int get(int x, int y) {
+    return int(texture(uSampler, (gl_FragCoord.xy + vec2(x, y)) / uScale).r);
 }
 
 void main() {
-    vec2 uv = (gl_FragCoord.xy * 2.0 - uResolution.xy) / uResolution.y;
-    vec2 uv0 = uv;
-    vec3 finalColor = vec3(0.0);
+    int sum = get(-1, -1) + get(-1,  0) + get(-1,  1) +
+              get( 0, -1)             + get( 0,  1) +
+              get( 1, -1) + get( 1,  0) + get( 1,  1);
 
-    for (float i = 0.0; i < 4.0; i++) {
-        uv = (fract(sin(uv*uTime) * 0.1) - 0.5);
-
-        float d = length(uv) * exp(-length(uv0));
-
-        vec3 col = palette(length(uv0) + i*.4 + uTime*.4);
-
-        d = sin(d*8. + uTime)/8.;
-        d = abs(d);
-
-        d = pow(0.01 / d, 1.2);
-
-        finalColor += col * d;
+    int current = get(0, 0);
+    if (sum == 3 || (sum == 2 && current == 1)) {
+        outColor = vec4(1.0, 1.0, 1.0, 1.0);
+    } else {
+        outColor = vec4(0.0, 0.0, 0.0, 1.0);
     }
-
-    fragColor = vec4(finalColor, 1.0);
 }

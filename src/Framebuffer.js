@@ -17,6 +17,11 @@ export default class Framebuffer {
 		this.framebuffer = this.gl.createFramebuffer();
 		this.bind();
 
+		this.setTexture(texture);
+
+		this.unbind();
+	}
+	setTexture(texture) {
 		this.gl.framebufferTexture2D(
 			this.gl.FRAMEBUFFER,
 			this.gl.COLOR_ATTACHMENT0,
@@ -24,7 +29,5 @@ export default class Framebuffer {
 			texture,
 			0
 		);
-
-		this.unbind();
 	}
 }

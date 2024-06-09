@@ -168,3 +168,4 @@ export class TexMap extends Model {
 		this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
 	}
 }
+
