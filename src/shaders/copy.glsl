@@ -1,13 +1,17 @@
 #version 300 es
-precision mediump float;
+precision highp float;
+
+out vec4 fragColor;
+
+uniform float uTime;
+uniform vec2 uResolution;
+uniform vec2 uMouse;
+uniform vec2 uPos;
 
 uniform sampler2D uSampler;
-uniform vec2 uScale;
-uniform vec2 uResolution;
 
-out vec4 outColor;
+in vec2 vCoord;
 
 void main() {
-    vec2 texCoord = gl_FragCoord.xy / uResolution * uScale;
-    outColor = texture(uSampler, texCoord);
+	fragColor = vec4(texture(uSampler,vCoord));
 }

@@ -1,11 +1,13 @@
 import Shader from "./Shader";
 import Texture from "./Texture";
-import Framebuffer from "./Framebuffer";
-import { Frame } from "./Model";
+import { Lube } from "./Model";
+import Framebuffer from "./Framebuffer"
+import { keys, mouseX, mouseY } from "./Input";
 
-import vertexSS from "./shaders/vert.glsl";
-import fragSS from "./shaders/frag.glsl";
-import copyFragSS from "./shaders/copy.glsl";
+import vertexShaderSource from "./shaders/vert.glsl";
+import fragmentShaderSource from "./shaders/copy.glsl";
+
+import tex0 from "./tex0.jpg"
 
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
@@ -17,71 +19,101 @@ const gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("webgl2"));
 if (gl === null) {
 	alert("Unable to initialize WebGL.");
 } else {
+	// SHADER
+	const vert = Shader.compileShader(vertexShaderSource, gl.VERTEX_SHADER, gl);
+	const frag = Shader.compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER, gl);
 
-	const vert = Shader.compileShader(vertexSS, gl.VERTEX_SHADER, gl);
-	const frag = Shader.compileShader(fragSS, gl.FRAGMENT_SHADER, gl);
-	const copyFrag = Shader.compileShader(copyFragSS, gl.FRAGMENT_SHADER, gl);
+	const globalShader = new Shader(gl);
+	globalShader.createShaders(vert, frag);
 
-	const shaderProgram = new Shader(gl);
-	shaderProgram.createShaders(vert, frag);
-
-	const copyShaderProgram = new Shader(gl);
-	copyShaderProgram.createShaders(vert, copyFrag);
-
-	const data = new Frame(gl);
+	// DATA
+	const data = new Lube(gl);
 	data.setup();
 
-	let frontTex = new Texture(gl, 0);
-	frontTex.createEmptyTex(256, 256);
+	// TEXTURE
+	const texture = new Texture(gl, 0);
+	texture.createTex(tex0, 256, 256);
 
-	let backTex = new Texture(gl, 1);
-	backTex.createEmptyTex(256, 256);
+	const targetTexture = new Texture(gl, 0);
+	targetTexture.createEmptyTex(256, 256);
 
+	// FB
 	const fb = new Framebuffer(gl);
-	fb.createFramebuff(backTex.texture);
+	fb.createFramebuff(targetTexture.texture);
 
-	// Set uniforms for Game of Life shader
-	gl.useProgram(shaderProgram.program);
-	const uSamplerLocation = gl.getUniformLocation(shaderProgram.program, "uSampler");
-	const uScaleLocation = gl.getUniformLocation(shaderProgram.program, "uScale");
+	gl.useProgram(globalShader.program);
+
+	// UNIFORMS
+	const uSamplerLocation = gl.getUniformLocation(globalShader.program, "uSampler");
 	gl.uniform1i(uSamplerLocation, 0);
-	gl.uniform2fv(uScaleLocation, [256, 256]);
 
-	// Set uniforms for copy shader
-	gl.useProgram(copyShaderProgram.program);
-	const uCopySamplerLocation = gl.getUniformLocation(copyShaderProgram.program, "uSampler");
-	const uCopyScaleLocation = gl.getUniformLocation(copyShaderProgram.program, "uScale");
-	const uCopyResolutionLocation = gl.getUniformLocation(copyShaderProgram.program, "uResolution");
-	gl.uniform1i(uCopySamplerLocation, 0);
-	gl.uniform2fv(uCopyScaleLocation, [256, 256]);
-	gl.uniform2fv(uCopyResolutionLocation, resolution);
-
-	function swapTextures() {
-		let temp = frontTex;
-		frontTex = backTex;
-		backTex = temp;
-		fb.setTexture(backTex.texture);
+	const startTime = performance.now();
+	let currentTime, elapsedTime;
+	const uTimeLocation = gl.getUniformLocation(globalShader.program, "uTime");
+	const uResolutionLocation = gl.getUniformLocation(globalShader.program, "uResolution");
+	const uMouseLocation = gl.getUniformLocation(globalShader.program, "uMouse");
+	let posX = 0;
+	let posY = 0;
+	function updatePos(movementSpeed) {
+		if (keys[72]) posX -= movementSpeed;
+		if (keys[76]) posX += movementSpeed;
+		if (keys[75]) posY += movementSpeed;
+		if (keys[74]) posY -= movementSpeed;
 	}
+	const uPosLocation = gl.getUniformLocation(globalShader.program, "uPos");
+
+	const uPMLocation = gl.getUniformLocation(globalShader.program, "uPM");
+	const uMVMLocation = gl.getUniformLocation(globalShader.program, "uMVM");
+
+	const fieldOfView = (45 * Math.PI) / 180;
+	const aspect = resolution[0] / resolution[1];
+	const zNear = 0.1;
+	const zFar = 100.0;
+	const projectionMatrix = mat4.create();
+
+	mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
+	const modelViewMatrix = mat4.create();
+
+	mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -3.0]);
+
+	mat4.rotate(modelViewMatrix, modelViewMatrix, 45.0 * Math.PI / 180, [1, 1, 0]);
+
+	gl.uniformMatrix4fv(uPMLocation, false, projectionMatrix);
+	gl.uniformMatrix4fv(uMVMLocation, false, modelViewMatrix);
+
+	gl.uniform2fv(uResolutionLocation, resolution);
+
+	gl.enable(gl.DEPTH_TEST);
+	gl.depthFunc(gl.LEQUAL);
 
 	function renderLoop() {
-		// Simulate Game of Life
+		// UPDATE
+		currentTime = performance.now();
+		elapsedTime = (currentTime - startTime) / 1000;
+		gl.uniform1f(uTimeLocation, elapsedTime);
+
+		updatePos(0.01);
+		gl.uniform2f(uPosLocation, posX, posY);
+
+		gl.uniform2f(uMouseLocation, mouseX / resolution[0] - 0.5, 0.5 - mouseY / resolution[1]);
+
+		mat4.rotate(modelViewMatrix, modelViewMatrix, (mouseX / resolution[0] - 0.5) * 2.0 * Math.PI / 180, [1, 0, 0]);
+		mat4.rotate(modelViewMatrix, modelViewMatrix, (0.5 - mouseY / resolution[1]) * 2.0 * Math.PI / 180, [0, 1, 0]);
+
+		gl.uniformMatrix4fv(uMVMLocation, false, modelViewMatrix);
+
 		fb.bind();
+		texture.bind();
 		gl.viewport(0, 0, 256, 256);
-		gl.useProgram(shaderProgram.program);
-		frontTex.bind();
-		gl.clearColor(0, 0, 0, 1);
+		gl.clearColor(0.1, 0.1, 0.1, 1);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		data.render();
 
 		fb.unbind();
-		swapTextures();
-
-		// Copy to canvas
-		gl.useProgram(copyShaderProgram.program);
+		targetTexture.bind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
 		gl.clearColor(1, 1, 1, 1);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		frontTex.bind();
 		data.render();
 
 		requestAnimationFrame(renderLoop);

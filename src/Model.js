@@ -169,3 +169,229 @@ export class TexMap extends Model {
 	}
 }
 
+export class Cube extends Model {
+	setup() {
+		const pos = new Float32Array([
+			-0.5, -0.5, -0.5,
+			-0.5, -0.5, 0.5,
+			-0.5, 0.5, 0.5,
+
+			-0.5, -0.5, -0.5,
+			-0.5, 0.5, 0.5,
+			-0.5, 0.5, -0.5,
+
+			0.5, 0.5, -0.5,
+			-0.5, -0.5, -0.5,
+			-0.5, 0.5, -0.5,
+
+			0.5, 0.5, -0.5,
+			0.5, -0.5, -0.5,
+			-0.5, -0.5, -0.5,
+
+			0.5, -0.5, 0.5,
+			-0.5, -0.5, -0.5,
+			0.5, -0.5, -0.5,
+
+			0.5, -0.5, 0.5,
+			-0.5, -0.5, 0.5,
+			-0.5, -0.5, -0.5,
+
+			-0.5, 0.5, 0.5,
+			-0.5, -0.5, 0.5,
+			0.5, -0.5, 0.5,
+
+
+			0.5, 0.5, 0.5,
+			-0.5, 0.5, 0.5,
+			0.5, -0.5, 0.5,
+
+			0.5, 0.5, 0.5,
+			0.5, -0.5, -0.5,
+			0.5, 0.5, -0.5,
+
+			0.5, -0.5, -0.5,
+			0.5, 0.5, 0.5,
+			0.5, -0.5, 0.5,
+
+			0.5, 0.5, 0.5,
+			0.5, 0.5, -0.5,
+			-0.5, 0.5, -0.5,
+
+			0.5, 0.5, 0.5,
+			-0.5, 0.5, -0.5,
+			-0.5, 0.5, 0.5,
+
+		]);
+		const col = new Float32Array([
+			1, 0, 0,
+			1, 0, 0,
+			1, 0, 0,
+
+			1, 0, 0,
+			1, 0, 0,
+			1, 0, 0,
+
+			0, 1, 0,
+			0, 1, 0,
+			0, 1, 0,
+
+			0, 1, 0,
+			0, 1, 0,
+			0, 1, 0,
+
+			0, 0, 1,
+			0, 0, 1,
+			0, 0, 1,
+
+			0, 0, 1,
+			0, 0, 1,
+			0, 0, 1,
+
+			0, 1, 1,
+			0, 1, 1,
+			0, 1, 1,
+
+			0, 1, 1,
+			0, 1, 1,
+			0, 1, 1,
+
+			1, 0, 1,
+			1, 0, 1,
+			1, 0, 1,
+
+			1, 0, 1,
+			1, 0, 1,
+			1, 0, 1,
+
+			1, 1, 0,
+			1, 1, 0,
+			1, 1, 0,
+
+			1, 1, 0,
+			1, 1, 0,
+			1, 1, 0,
+
+		]);
+
+		this.vao = this.gl.createVertexArray();
+		this.gl.bindVertexArray(this.vao);
+
+		this.positionBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, pos, this.gl.STATIC_DRAW);
+		this.gl.enableVertexAttribArray(0);
+		this.gl.vertexAttribPointer(0, 3, this.gl.FLOAT, false, 0, 0);
+
+		this.colorBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, col, this.gl.STATIC_DRAW);
+		this.gl.vertexAttribPointer(1, 3, this.gl.FLOAT, false, 0, 0);
+		this.gl.enableVertexAttribArray(1);
+
+	}
+	render() {
+		this.gl.bindVertexArray(this.vao);
+		this.gl.drawArrays(this.gl.TRIANGLES, 0, 12 * 3);
+	}
+}
+
+export class Lube extends Model {
+	setup() {
+		const pos = new Float32Array([
+			-0.5, -0.5, 0.5,
+			0.5, -0.5, 0.5,
+			0.5, 0.5, 0.5,
+			-0.5, 0.5, 0.5,
+
+			-0.5, -0.5, -0.5,
+			-0.5, 0.5, -0.5,
+			0.5, 0.5, -0.5,
+			0.5, -0.5, -0.5,
+
+			-0.5, 0.5, -0.5,
+			-0.5, 0.5, 0.5,
+			0.5, 0.5, 0.5,
+			0.5, 0.5, -0.5,
+
+			-0.5, -0.5, -0.5,
+			0.5, -0.5, -0.5,
+			0.5, -0.5, 0.5,
+			-0.5, -0.5, 0.5,
+
+			0.5, -0.5, -0.5,
+			0.5, 0.5, -0.5,
+			0.5, 0.5, 0.5,
+			0.5, -0.5, 0.5,
+
+			-0.5, -0.5, -0.5,
+			-0.5, -0.5, 0.5,
+			-0.5, 0.5, 0.5,
+			-0.5, 0.5, -0.5,
+		]);
+
+		const texCoords = new Float32Array([
+			0.0, 0.0,
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+
+			0.0, 0.0,
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+
+			0.0, 0.0,
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+
+			0.0, 0.0,
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+
+			0.0, 0.0,
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+
+			0.0, 0.0,
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+		]);
+
+		const indices = new Uint16Array([
+			0, 1, 2, 0, 2, 3,
+			4, 5, 6, 4, 6, 7,
+			8, 9, 10, 8, 10, 11,
+			12, 13, 14, 12, 14, 15,
+			16, 17, 18, 16, 18, 19,
+			20, 21, 22, 20, 22, 23
+		]);
+
+		this.vao = this.gl.createVertexArray();
+		this.gl.bindVertexArray(this.vao);
+
+		this.positionBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, pos, this.gl.STATIC_DRAW);
+		this.gl.enableVertexAttribArray(0);
+		this.gl.vertexAttribPointer(0, 3, this.gl.FLOAT, false, 0, 0);
+
+		this.texCoordBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.texCoordBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, texCoords, this.gl.STATIC_DRAW);
+		this.gl.enableVertexAttribArray(1);
+		this.gl.vertexAttribPointer(1, 2, this.gl.FLOAT, false, 0, 0);
+
+		this.indexBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, indices, this.gl.STATIC_DRAW);
+	}
+
+	render() {
+		this.gl.bindVertexArray(this.vao);
+		this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
+	}
+}

@@ -18,6 +18,15 @@ export default class Framebuffer {
 		this.bind();
 
 		this.setTexture(texture);
+		const depthBuffer = this.gl.createRenderbuffer();
+		this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, depthBuffer);
+		this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16, 256, 256);
+		this.gl.framebufferRenderbuffer(
+			this.gl.FRAMEBUFFER,
+			this.gl.DEPTH_ATTACHMENT,
+			this.gl.RENDERBUFFER,
+			depthBuffer
+		);
 
 		this.unbind();
 	}
