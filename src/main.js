@@ -85,7 +85,7 @@ if (gl === null) {
 		fb.bind();
 		texture.bind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
-		gl.clearColor(0.1, 0.1, 0.1, 1);
+		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		data.render();
 
@@ -98,7 +98,7 @@ if (gl === null) {
 		fb.unbind();
 		targetTexture.bind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
-		gl.clearColor(1, 1, 1, 1);
+		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		data.render();
 
