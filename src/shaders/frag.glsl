@@ -13,5 +13,12 @@ uniform sampler2D uSampler;
 in vec2 vCoord;
 
 void main() {
-	fragColor = vec4(texture(uSampler,vCoord).grb,1.0);
+    vec2 uv = gl_FragCoord.xy / uResolution;
+    float radius = 0.01;
+    float dist = distance(uv, uMouse);
+    if (dist < radius) {
+        fragColor = vec4(1.0, 1.0, 1.0, 1.0);
+    } else {
+        fragColor = vec4(uv, 0.0, 1.0);
+    }
 }
