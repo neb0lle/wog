@@ -3,11 +3,15 @@ precision highp float;
 
 out vec4 fragColor;
 
-in vec2 vCoord;
-
 uniform float uTime;
 uniform vec2 uResolution;
+uniform vec2 uMouse;
+uniform vec2 uPos;
+
+uniform sampler2D uSampler;
+
+in vec2 vCoord;
 
 void main() {
-    fragColor = vec4(vCoord.xy,.5,1.0);
+	fragColor = vec4(texture(uSampler,vCoord).grb,1.0);
 }
