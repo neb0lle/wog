@@ -11,7 +11,9 @@ import copyShaderSource from "./shaders/copy.glsl";
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-const resolution = [canvas.width, canvas.height];
+
+const scaleFactor = 4;
+const resolution = [canvas.width / scaleFactor, canvas.height / scaleFactor];
 
 const gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("webgl2"));
 
@@ -68,9 +70,6 @@ if (gl === null) {
 	const uMouseLocation = gl.getUniformLocation(globalShader.program, "uMouse");
 
 	const uSamplerLocation1 = gl.getUniformLocation(copyShader.program, "uSampler");
-	const uTimeLocation1 = gl.getUniformLocation(copyShader.program, "uTime");
-	const uResolutionLocation1 = gl.getUniformLocation(copyShader.program, "uResolution");
-	const uMouseLocation1 = gl.getUniformLocation(copyShader.program, "uMouse");
 
 	// UNIFORM PASSTHROUGH
 	gl.useProgram(globalShader.program);
@@ -79,7 +78,6 @@ if (gl === null) {
 
 	gl.useProgram(copyShader.program)
 	gl.uniform1i(uSamplerLocation1, 1);
-	gl.uniform2fv(uResolutionLocation1, resolution);
 
 	gl.enable(gl.DEPTH_TEST);
 	gl.depthFunc(gl.LEQUAL);
@@ -92,7 +90,7 @@ if (gl === null) {
 		// p1 
 		gl.useProgram(globalShader.program);
 		gl.uniform1f(uTimeLocation, elapsedTime);
-		gl.uniform2f(uMouseLocation, mouseX / resolution[0], 1 - mouseY / resolution[1]);
+		gl.uniform2f(uMouseLocation, mouseX / resolution[0] / scaleFactor, 1 - mouseY / resolution[1] / scaleFactor);
 
 		fb.bind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
@@ -104,11 +102,8 @@ if (gl === null) {
 
 		// p2
 		gl.useProgram(copyShader.program);
-		gl.uniform1f(uTimeLocation1, elapsedTime);
-		gl.uniform2f(uMouseLocation1, mouseX / resolution[0], 1 - mouseY / resolution[1]);
-
 		fb.unbind();
-		gl.viewport(0, 0, resolution[0], resolution[1]);
+		gl.viewport(0, 0, resolution[0] * scaleFactor, resolution[1] * scaleFactor);
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		data.render();
