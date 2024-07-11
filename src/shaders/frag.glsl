@@ -19,6 +19,6 @@ void main() {
     if (dist < radius) {
         fragColor = vec4(1.0, 1.0, 1.0, 1.0);
     } else {
-        fragColor = vec4(uv, 0.0, 1.0);
+		fragColor = vec4(texture(uSampler,vCoord).rgb-vec3(uMouse/10.0,1.0),1.0);
     }
 }

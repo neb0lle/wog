@@ -34,15 +34,27 @@ if (gl === null) {
 	data.setup();
 
 	// TEXTURE
-	const texture = new Texture(gl, 0);
-	texture.createEmptyTex(resolution[0], resolution[1]);
+	var texture1 = new Texture(gl, 0);
+	texture1.createEmptyTex(resolution[0], resolution[1]);
 
-	const targetTexture = new Texture(gl, 1);
-	targetTexture.createEmptyTex(resolution[0], resolution[1]);
+	var texture2 = new Texture(gl, 1);
+	texture2.createEmptyTex(resolution[0], resolution[1]);
 
 	// FB
 	const fb = new Framebuffer(gl);
-	fb.createFramebuff(targetTexture.texture, resolution[0], resolution[1]);
+	fb.createFramebuff(texture2.texture, resolution[0], resolution[1]);
+
+	function swapTextures() {
+		let temp = texture1;
+		texture1 = texture2;
+		texture2 = temp;
+
+		texture1.unit = 0;
+		texture1.bind();
+		texture2.unit = 1;
+		texture2.bind();
+		fb.setTexture(texture2.texture);
+	}
 
 	// UNIFORM DATA
 	const startTime = performance.now();
@@ -83,12 +95,12 @@ if (gl === null) {
 		gl.uniform2f(uMouseLocation, mouseX / resolution[0], 1 - mouseY / resolution[1]);
 
 		fb.bind();
-		texture.bind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		data.render();
 
+		swapTextures();
 
 		// p2
 		gl.useProgram(copyShader.program);
@@ -96,7 +108,6 @@ if (gl === null) {
 		gl.uniform2f(uMouseLocation1, mouseX / resolution[0], 1 - mouseY / resolution[1]);
 
 		fb.unbind();
-		targetTexture.bind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -104,6 +115,7 @@ if (gl === null) {
 
 		requestAnimationFrame(renderLoop);
 	}
+
 
 	renderLoop();
 }
