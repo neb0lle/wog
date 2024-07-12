@@ -1,12 +1,13 @@
 import Shader from "./Shader";
 import Texture from "./Texture";
-import { Frame } from "./Model";
+import { TexMap } from "./Model";
 import { keys, mouseX, mouseY } from "./Input";
 
 import vertexShaderSource from "./shaders/vert.glsl";
-import fragmentShaderSource from "./shaders/sdf.glsl";
+import fragmentShaderSource from "./shaders/texture.glsl";
 
-// import sampleTexture from "./tex2.jpg";
+import t1 from "./black.png";
+import t2 from "./white.png";
 
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
@@ -30,21 +31,30 @@ if (gl === null) {
 	globalShader.createShaders(vert, frag0);
 
 	// DATA
-	const data = new Frame(gl);
+	const data = new TexMap(gl);
 	data.setup();
 
 	// TEXTURE
-	// const texture = new Texture(gl, 0);
-	// texture.createTex(sampleTexture);
+	const tex1 = new Texture(gl, 0);
+	tex1.createTex(t1);
+
+	const tex2 = new Texture(gl, 2);
+	tex2.createTex(t2);
 
 	gl.useProgram(globalShader.program);
 
 	// UNIFORMS
-	const uSamplerLocation = gl.getUniformLocation(
+	const uSampler1Location = gl.getUniformLocation(
 		globalShader.program,
-		"uSampler",
+		"uSampler1",
 	);
-	gl.uniform1i(uSamplerLocation, 0);
+	gl.uniform1i(uSampler1Location, 0);
+
+	const uSampler2Location = gl.getUniformLocation(
+		globalShader.program,
+		"uSampler2",
+	);
+	gl.uniform1i(uSampler2Location, 0);
 
 	const startTime = performance.now();
 	let currentTime, elapsedTime;
@@ -57,110 +67,6 @@ if (gl === null) {
 		globalShader.program,
 		"uMouse",
 	);
-	let posX = 0;
-	let posY = 0;
-	function updatePos(movementSpeed) {
-		if (keys[72]) posX -= movementSpeed;
-		if (keys[76]) posX += movementSpeed;
-		if (keys[75]) posY += movementSpeed;
-		if (keys[74]) posY -= movementSpeed;
-	}
-	const uPosLocation = gl.getUniformLocation(globalShader.program, "uPos");
-
-	const kernels = {
-		normal: [
-			0, 0, 0,
-			0, 1, 0,
-			0, 0, 0,
-		],
-		gaussianBlur: [
-			1, 2, 1,
-			2, 4, 2,
-			1, 2, 1,
-		],
-		gaus3: [
-			0, 0, 0, 0, 0,
-			0, 1, 2, 1, 0,
-			0, 2, 4, 2, 0,
-			0, 1, 2, 1, 0,
-			0, 0, 0, 0, 0
-		],
-		biggaussianBlur: [
-			0, 1, 2, 1, 0,
-			1, 2, 4, 2, 1,
-			2, 4, 8, 4, 2,
-			1, 2, 4, 2, 1,
-			0, 1, 2, 1, 0
-		],
-		unsharpen: [
-			-1, -1, -1,
-			-1, 9, -1,
-			-1, -1, -1,
-		],
-		sharpen: [
-			0, -1, 0,
-			-1, 5, -1,
-			0, -1, 0,
-		],
-		edgeDetect1: [
-			0, -1, 0,
-			-1, 4, -1,
-			0, -1, 0,
-		],
-		edgeDetect2: [
-			-1, -1, -1,
-			-1, 8, -1,
-			-1, -1, -1,
-		],
-		edgeDetect3: [
-			-5, 0, 0,
-			0, 0, 0,
-			0, 0, 5,
-		],
-		edgeDetect4: [
-			-1, -1, -1,
-			0, 0, 0,
-			1, 1, 1,
-		],
-		edgeDetect5: [
-			-1, -1, -1,
-			2, 2, 2,
-			-1, -1, -1,
-		],
-		edgeDetect6: [
-			-5, -5, -5,
-			-5, 39, -5,
-			-5, -5, -5,
-		],
-		boxBlur: [
-			1, 1, 1,
-			1, 1, 1,
-			1, 1, 1,
-		],
-		triangleBlur: [
-			0.0625, 0.125, 0.0625,
-			0.125, 0.25, 0.125,
-			0.0625, 0.125, 0.0625,
-		],
-		emboss: [
-			-2, -1, 0,
-			-1, 1, 1,
-			0, 1, 2,
-		],
-	};
-
-	function computeKernelWeight(kernel) {
-		var weight = kernel.reduce(function(prev, curr) {
-			return prev + curr;
-		});
-		return weight <= 0 ? 1 : weight;
-	}
-	const uKernelLocation = gl.getUniformLocation(globalShader.program, "uKernel");
-	const uKernelWeightLocation = gl.getUniformLocation(globalShader.program, "uKernelWeight");
-
-	const cc = kernels.sharpen;
-	gl.uniform1fv(uKernelLocation, cc);
-	gl.uniform1f(uKernelWeightLocation, computeKernelWeight(cc));
 
 	gl.uniform2fv(uResolutionLocation, resolution);
 
@@ -173,14 +79,10 @@ if (gl === null) {
 		currentTime = performance.now();
 		elapsedTime = (currentTime - startTime) / 1000;
 		gl.uniform1f(uTimeLocation, elapsedTime);
-
-		updatePos(0.01);
-		gl.uniform2f(uPosLocation, posX, posY);
-
 		gl.uniform2f(
 			uMouseLocation,
-			mouseX / resolution[0] - 0.5,
-			0.5 - mouseY / resolution[1],
+			mouseX / resolution[0],
+			1.0 - mouseY / resolution[1],
 		);
 		data.render();
 
