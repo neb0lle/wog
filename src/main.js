@@ -36,10 +36,10 @@ if (gl === null) {
 
 	// TEXTURE
 	const tex1 = new Texture(gl, 0);
-	tex1.createTex(t1, 100, 100);
+	tex1.createTex(t1, 360, 180);
 
 	const tex2 = new Texture(gl, 1);
-	tex2.createTex(t2, 100, 100);
+	tex2.createTex(t2, 360, 180);
 
 	gl.useProgram(globalShader.program);
 
