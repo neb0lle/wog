@@ -6,7 +6,6 @@ layout (location=1) in vec2 texCoord;
 uniform float uTime;
 uniform vec2 uResolution;
 uniform vec2 uMouse;
-uniform vec2 uPos;
 
 out vec2 vTextureCoord;
 

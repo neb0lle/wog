@@ -54,7 +54,7 @@ if (gl === null) {
 		globalShader.program,
 		"uSampler2",
 	);
-	gl.uniform1i(uSampler2Location, 0);
+	gl.uniform1i(uSampler2Location, 1);
 
 	const startTime = performance.now();
 	let currentTime, elapsedTime;

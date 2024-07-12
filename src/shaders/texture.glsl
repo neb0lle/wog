@@ -14,6 +14,6 @@ uniform sampler2D uSampler2;
 in vec2 vTextureCoord;
 
 void main() {
-	vec4 s = vec4(texture(uSampler,vec2(vTextureCoord.x,vTextureCoord.y)));
+	vec4 s = vec4(texture(uSampler1,vec2(vTextureCoord.x,vTextureCoord.y)));
 	fragColor = vec4(s.b,s.b,s.b,1.0);
 }
