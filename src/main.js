@@ -12,7 +12,7 @@ const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-const scaleFactor = 4;
+const scaleFactor = 1;
 const resolution = [canvas.width / scaleFactor, canvas.height / scaleFactor];
 
 const gl = WebGLDebugUtils.makeDebugContext(canvas.getContext("webgl2"));
