@@ -1,13 +1,19 @@
 import Shader from "./Shader";
 import Texture from "./Texture";
 import { TexMap } from "./Model";
-import { keys, mouseX, mouseY } from "./Input";
+import { mouseX, mouseY } from "./Input";
 
 import vertexShaderSource from "./shaders/vert.glsl";
 import fragmentShaderSource from "./shaders/texture.glsl";
 
-import t1 from "./black.png";
-import t2 from "./white.png";
+import n from "./textures/n.png";
+import s from "./textures/s.png";
+import e from "./textures/e.png";
+import w from "./textures/w.png";
+import ne from "./textures/ne.png";
+import se from "./textures/se.png";
+import nw from "./textures/nw.png";
+import sw from "./textures/sw.png";
 
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
@@ -21,11 +27,7 @@ if (gl === null) {
 } else {
 	// SHADER
 	const vert = Shader.compileShader(vertexShaderSource, gl.VERTEX_SHADER, gl);
-	const frag0 = Shader.compileShader(
-		fragmentShaderSource,
-		gl.FRAGMENT_SHADER,
-		gl,
-	);
+	const frag0 = Shader.compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER, gl);
 
 	const globalShader = new Shader(gl);
 	globalShader.createShaders(vert, frag0);
@@ -35,38 +37,36 @@ if (gl === null) {
 	data.setup();
 
 	// TEXTURE
-	const tex1 = new Texture(gl, 0);
-	tex1.createTex(t1, 360, 180);
+	const textures = [
+		new Texture(gl, 0),
+		new Texture(gl, 1),
+		new Texture(gl, 2),
+		new Texture(gl, 3),
+		new Texture(gl, 4),
+		new Texture(gl, 5),
+		new Texture(gl, 6),
+		new Texture(gl, 7),
+	];
 
-	const tex2 = new Texture(gl, 1);
-	tex2.createTex(t2, 360, 180);
+	const images = [n, s, e, w, ne, se, nw, sw];
+
+	images.forEach((image, index) => {
+		textures[index].createTex(image, 256, 256);
+	});
 
 	gl.useProgram(globalShader.program);
 
 	// UNIFORMS
-	const uSampler1Location = gl.getUniformLocation(
-		globalShader.program,
-		"uSampler1",
-	);
-	gl.uniform1i(uSampler1Location, 0);
-
-	const uSampler2Location = gl.getUniformLocation(
-		globalShader.program,
-		"uSampler2",
-	);
-	gl.uniform1i(uSampler2Location, 1);
+	for (let i = 0; i < 8; i++) {
+		const samplerLocation = gl.getUniformLocation(globalShader.program, `uSampler${i}`);
+		gl.uniform1i(samplerLocation, i);
+	}
 
 	const startTime = performance.now();
 	let currentTime, elapsedTime;
 	const uTimeLocation = gl.getUniformLocation(globalShader.program, "uTime");
-	const uResolutionLocation = gl.getUniformLocation(
-		globalShader.program,
-		"uResolution",
-	);
-	const uMouseLocation = gl.getUniformLocation(
-		globalShader.program,
-		"uMouse",
-	);
+	const uResolutionLocation = gl.getUniformLocation(globalShader.program, "uResolution");
+	const uMouseLocation = gl.getUniformLocation(globalShader.program, "uMouse");
 
 	gl.uniform2fv(uResolutionLocation, resolution);
 
@@ -79,11 +79,7 @@ if (gl === null) {
 		currentTime = performance.now();
 		elapsedTime = (currentTime - startTime) / 1000;
 		gl.uniform1f(uTimeLocation, elapsedTime);
-		gl.uniform2f(
-			uMouseLocation,
-			mouseX / resolution[0],
-			1.0 - mouseY / resolution[1],
-		);
+		gl.uniform2f(uMouseLocation, mouseX / resolution[0], 1.0 - mouseY / resolution[1]);
 		data.render();
 
 		requestAnimationFrame(renderLoop);
@@ -91,3 +87,4 @@ if (gl === null) {
 
 	renderLoop();
 }
+
