@@ -32,9 +32,9 @@ bool isPointInTriangle(vec2 p, vec2 v1, vec2 v2, vec2 v3) {
 }
 
 void main() {
-    float sf = 40.0;
+    float sf = 20.0;
     vec2 uv = gl_FragCoord.xy / uResolution;
-    vec2 t = floor(uv * sf) / sf;
+    vec2 t = floor(uv * sf) / sf+(0.5/sf);
 
     // vec2 v1 = uMouse + vec2(-0.1, -0.1);
     // vec2 v2 = uMouse + vec2(0.1, -0.1);
