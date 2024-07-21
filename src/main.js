@@ -7,6 +7,7 @@ import drawVS from "./shaders/drawVS.glsl";
 import drawFS from "./shaders/drawFS.glsl";
 
 const canvas = document.querySelector("#glcanvas");
+const fpsElem = document.querySelector("#fps");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 const resolution = [canvas.width, canvas.height];
@@ -36,17 +37,15 @@ if (gl === null) {
 		return Math.random() * (max - min) + min;
 	};
 
-	// Generates an array of random values based on the provided ranges
 	const createPoints = (num, ranges) =>
 		new Array(num).fill(0).map(() =>
 			ranges.map(range => rand(...range))
 		).flat();
 
-	// Number of particles
-	const numParticles = 20000;
+	const numParticles = 100000;
 
 	const positions = new Float32Array(createPoints(numParticles, [[-1, 1], [-1, 1]]));
-	const velocities = new Float32Array(createPoints(numParticles, [[-1, 1], [-1, 1]]));
+	const velocities = new Float32Array(createPoints(numParticles, [[-.1, .1], [-.1, .1]]));
 
 	// BUFF
 	const position1Buffer = Model.createBuffer(gl, positions, gl.DYNAMIC_DRAW);
@@ -123,11 +122,13 @@ if (gl === null) {
 
 	gl.clearColor(1, 1, 1, 1);
 
-	let lastTime = performance.now();
+	let lastTime = performance.now() * .001;
 	function renderLoop() {
-		const currentTime = performance.now();
-		const deltaTime = (currentTime - lastTime) / 1000;
+		const currentTime = performance.now() * .001;
+		const deltaTime = currentTime - lastTime;
 		lastTime = currentTime;
+		const fps = 1 / deltaTime;
+		fpsElem.textContent = fps.toFixed(1);
 
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
