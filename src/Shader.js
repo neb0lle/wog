@@ -4,7 +4,7 @@ export default class Shader {
 		this.program = null;
 	}
 
-	static compileShader(source, type, gl) {
+	static compileShader(gl, source, type) {
 		const shader = gl.createShader(type);
 		gl.shaderSource(shader, source);
 		gl.compileShader(shader);
@@ -17,11 +17,19 @@ export default class Shader {
 		return shader;
 	}
 
-	createShaders(vertexShader, fragmentShader) {
+	createShaders(vertexShader, fragmentShader, transformFeedbackVaryings) {
 		this.program = this.gl.createProgram();
 
 		this.gl.attachShader(this.program, vertexShader);
 		this.gl.attachShader(this.program, fragmentShader);
+
+		if (transformFeedbackVaryings) {
+			this.gl.transformFeedbackVaryings(
+				this.program,
+				transformFeedbackVaryings,
+				this.gl.SEPARATE_ATTRIBS,
+			);
+		}
 
 		this.gl.linkProgram(this.program);
 

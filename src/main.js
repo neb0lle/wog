@@ -1,19 +1,10 @@
 import Shader from "./Shader";
-import Texture from "./Texture";
-import { TexMap } from "./Model";
-import { mouseX, mouseY } from "./Input";
+import Model from "./Model"
 
-import vertexShaderSource from "./shaders/vert.glsl";
-import fragmentShaderSource from "./shaders/texture.glsl";
-
-import n from "./textures/n.png";
-import s from "./textures/s.png";
-import e from "./textures/e.png";
-import w from "./textures/w.png";
-import ne from "./textures/ne.png";
-import se from "./textures/se.png";
-import nw from "./textures/nw.png";
-import sw from "./textures/sw.png";
+import updateVS from "./shaders/updateVS.glsl";
+import updateFS from "./shaders/updateFS.glsl";
+import drawVS from "./shaders/drawVS.glsl";
+import drawFS from "./shaders/drawFS.glsl";
 
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
@@ -26,65 +17,148 @@ if (gl === null) {
 	alert("Unable to initialize WebGL.");
 } else {
 	// SHADER
-	const vert = Shader.compileShader(vertexShaderSource, gl.VERTEX_SHADER, gl);
-	const frag0 = Shader.compileShader(fragmentShaderSource, gl.FRAGMENT_SHADER, gl);
+	const updateVertexShader = Shader.compileShader(gl, updateVS, gl.VERTEX_SHADER);
+	const updateFragmentShader = Shader.compileShader(gl, updateFS, gl.FRAGMENT_SHADER);
+	const drawVertexShader = Shader.compileShader(gl, drawVS, gl.VERTEX_SHADER);
+	const drawFragmentShader = Shader.compileShader(gl, drawFS, gl.FRAGMENT_SHADER);
 
-	const globalShader = new Shader(gl);
-	globalShader.createShaders(vert, frag0);
+	const updateProgram = new Shader(gl);
+	updateProgram.createShaders(updateVertexShader, updateFragmentShader, ['newPosition']);
+	const drawProgram = new Shader(gl);
+	drawProgram.createShaders(drawVertexShader, drawFragmentShader);
 
 	// DATA
-	const data = new TexMap(gl);
-	data.setup();
+	const rand = (min, max) => {
+		if (max === undefined) {
+			max = min;
+			min = 0;
+		}
+		return Math.random() * (max - min) + min;
+	};
 
-	// TEXTURE
-	const textures = [
-		new Texture(gl, 0),
-		new Texture(gl, 1),
-		new Texture(gl, 2),
-		new Texture(gl, 3),
-		new Texture(gl, 4),
-		new Texture(gl, 5),
-		new Texture(gl, 6),
-		new Texture(gl, 7),
-	];
+	// Generates an array of random values based on the provided ranges
+	const createPoints = (num, ranges) =>
+		new Array(num).fill(0).map(() =>
+			ranges.map(range => rand(...range))
+		).flat();
 
-	const images = [n, s, e, w, ne, se, nw, sw];
+	// Number of particles
+	const numParticles = 20000;
 
-	images.forEach((image, index) => {
-		textures[index].createTex(image, 256, 256);
-	});
+	const positions = new Float32Array(createPoints(numParticles, [[-1, 1], [-1, 1]]));
+	const velocities = new Float32Array(createPoints(numParticles, [[-1, 1], [-1, 1]]));
 
-	gl.useProgram(globalShader.program);
+	// BUFF
+	const position1Buffer = Model.createBuffer(gl, positions, gl.DYNAMIC_DRAW);
+	const position2Buffer = Model.createBuffer(gl, positions, gl.DYNAMIC_DRAW);
+	const velocityBuffer = Model.createBuffer(gl, velocities, gl.STATIC_DRAW);
 
-	// UNIFORMS
-	for (let i = 0; i < 8; i++) {
-		const samplerLocation = gl.getUniformLocation(globalShader.program, `uSampler${i}`);
-		gl.uniform1i(samplerLocation, i);
+	function makeVertexArray(gl, bufLocPairs) {
+		const va = gl.createVertexArray();
+		gl.bindVertexArray(va);
+		for (const [buffer, loc] of bufLocPairs) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+			gl.enableVertexAttribArray(loc);
+			gl.vertexAttribPointer(
+				loc,      // attribute location
+				2,        // number of elements
+				gl.FLOAT, // type of data
+				false,    // normalize
+				0,        // stride (0 = auto)
+				0,        // offset
+			);
+		}
+		return va;
+	}
+	const updatePositionPrgLocs = {
+		oldPosition: gl.getAttribLocation(updateProgram.program, 'oldPosition'),
+		velocity: gl.getAttribLocation(updateProgram.program, 'velocity'),
+		canvasDimensions: gl.getUniformLocation(updateProgram.program, 'canvasDimensions'),
+		deltaTime: gl.getUniformLocation(updateProgram.program, 'deltaTime'),
+	};
+
+	const drawParticlesProgLocs = {
+		position: gl.getAttribLocation(drawProgram.program, 'position'),
+	};
+	const updatePositionVAO1 = makeVertexArray(gl, [
+		[position1Buffer, updatePositionPrgLocs.oldPosition],
+		[velocityBuffer, updatePositionPrgLocs.velocity],
+	]);
+	const updatePositionVAO2 = makeVertexArray(gl, [
+		[position2Buffer, updatePositionPrgLocs.oldPosition],
+		[velocityBuffer, updatePositionPrgLocs.velocity],
+	]);
+	const drawVAO1 = makeVertexArray(
+		gl, [[position1Buffer, drawParticlesProgLocs.position]]);
+	const drawVAO2 = makeVertexArray(
+		gl, [[position2Buffer, drawParticlesProgLocs.position]]);
+
+	function makeTransformFeedback(gl, buffer) {
+		const tf = gl.createTransformFeedback();
+		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, tf);
+		gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, buffer);
+		return tf;
 	}
 
-	const startTime = performance.now();
-	let currentTime, elapsedTime;
-	const uTimeLocation = gl.getUniformLocation(globalShader.program, "uTime");
-	const uResolutionLocation = gl.getUniformLocation(globalShader.program, "uResolution");
-	const uMouseLocation = gl.getUniformLocation(globalShader.program, "uMouse");
+	const tf1 = makeTransformFeedback(gl, position1Buffer);
+	const tf2 = makeTransformFeedback(gl, position2Buffer);
 
-	gl.uniform2fv(uResolutionLocation, resolution);
+	let current = {
+		updateVA: updatePositionVAO1,
+		tf: tf2,
+		drawVA: drawVAO2,
+	};
+	let next = {
+		updateVA: updatePositionVAO2,
+		tf: tf1,
+		drawVA: drawVAO1,
+	};
+
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, null);
+	gl.bindBuffer(gl.TRANSFORM_FEEDBACK_BUFFER, null);
+
+	gl.useProgram(updateProgram.program);
+	gl.uniform2f(updatePositionPrgLocs.canvasDimensions, canvas.width, canvas.height);
 
 	gl.clearColor(1, 1, 1, 1);
 
+	let lastTime = performance.now();
 	function renderLoop() {
+		const currentTime = performance.now();
+		const deltaTime = (currentTime - lastTime) / 1000;
+		lastTime = currentTime;
+
 		gl.clear(gl.COLOR_BUFFER_BIT);
 
-		// UPDATE
-		currentTime = performance.now();
-		elapsedTime = (currentTime - startTime) / 1000;
-		gl.uniform1f(uTimeLocation, elapsedTime);
-		gl.uniform2f(uMouseLocation, mouseX / resolution[0], 1.0 - mouseY / resolution[1]);
-		data.render();
+		gl.useProgram(updateProgram.program);
+		gl.bindVertexArray(current.updateVA);
+		gl.uniform2f(updatePositionPrgLocs.canvasDimensions, gl.canvas.width, gl.canvas.height);
+		gl.uniform1f(updatePositionPrgLocs.deltaTime, deltaTime);
+
+		gl.enable(gl.RASTERIZER_DISCARD);
+
+		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, current.tf);
+		gl.beginTransformFeedback(gl.POINTS);
+		gl.drawArrays(gl.POINTS, 0, numParticles);
+		gl.endTransformFeedback();
+		gl.bindTransformFeedback(gl.TRANSFORM_FEEDBACK, null);
+
+		gl.disable(gl.RASTERIZER_DISCARD);
+
+		gl.useProgram(drawProgram.program);
+		gl.bindVertexArray(current.drawVA);
+		gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+		gl.drawArrays(gl.POINTS, 0, numParticles);
+
+		{
+			const temp = current;
+			current = next;
+			next = temp;
+		}
 
 		requestAnimationFrame(renderLoop);
 	}
 
 	renderLoop();
 }
-
