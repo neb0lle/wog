@@ -90,24 +90,25 @@ if (gl === null) {
 		elapsedTime = (currentTime - startTime) / 1000;
 
 		// p1 
+		fb.bind();
+
 		gl.useProgram(globalShader.program);
 		gl.uniform1f(uTimeLocation, elapsedTime);
 		gl.uniform2f(uMouseLocation, mouseX / resolution[0], 1 - mouseY / resolution[1]);
 
-		fb.bind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		data.render();
 
 		swapTextures();
+		fb.unbind();
 
 		// p2
 		gl.useProgram(copyShader.program);
 		gl.uniform1f(uTimeLocation1, elapsedTime);
 		gl.uniform2f(uMouseLocation1, mouseX / resolution[0], 1 - mouseY / resolution[1]);
 
-		fb.unbind();
 		gl.viewport(0, 0, resolution[0], resolution[1]);
 		gl.clearColor(0, 0, 0, 0);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
