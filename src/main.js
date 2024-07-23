@@ -134,7 +134,6 @@ if (gl === null) {
 
 		gl.useProgram(updateProgram.program);
 		gl.bindVertexArray(current.updateVA);
-		gl.uniform2f(updatePositionPrgLocs.canvasDimensions, gl.canvas.width, gl.canvas.height);
 		gl.uniform1f(updatePositionPrgLocs.deltaTime, deltaTime);
 
 		gl.enable(gl.RASTERIZER_DISCARD);
