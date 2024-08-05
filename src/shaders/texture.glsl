@@ -18,7 +18,7 @@ uniform sampler2D uSampler7;
 in vec2 vTextureCoord;
 
 void main() {
-    float sf = 16.0;
+    float sf = 15.0;
     vec2 uv = gl_FragCoord.xy / uResolution;
     vec2 t = floor(uv * sf) / sf+(0.5/sf);
     vec2 direction = normalize(uMouse - t);

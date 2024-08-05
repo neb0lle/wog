@@ -6,14 +6,14 @@ import { mouseX, mouseY } from "./Input";
 import vertexShaderSource from "./shaders/vert.glsl";
 import fragmentShaderSource from "./shaders/texture.glsl";
 
-import n from "./textures/n.png";
-import s from "./textures/s.png";
-import e from "./textures/e.png";
-import w from "./textures/w.png";
-import ne from "./textures/ne.png";
-import se from "./textures/se.png";
-import nw from "./textures/nw.png";
-import sw from "./textures/sw.png";
+import n from "./textures1/n.png";
+import s from "./textures1/s.png";
+import e from "./textures1/e.png";
+import w from "./textures1/w.png";
+import ne from "./textures1/ne.png";
+import se from "./textures1/se.png";
+import nw from "./textures1/nw.png";
+import sw from "./textures1/sw.png";
 
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
@@ -51,7 +51,7 @@ if (gl === null) {
 	const images = [n, s, e, w, ne, se, nw, sw];
 
 	images.forEach((image, index) => {
-		textures[index].createTex(image, 256, 256);
+		textures[index].createTex(image, 540, 460);
 	});
 
 	gl.useProgram(globalShader.program);
