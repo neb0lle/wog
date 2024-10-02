@@ -35,7 +35,7 @@ int getAliveNeighbors(vec2 uv) {
 void main() {
     vec2 uv = gl_FragCoord.xy / uResolution;
     float currentState = getState(uv);
-    float radius = 0.01;
+    float radius = 0.1;
     float dist = distance(uv, uMouse);
 
     if (dist < radius) {
@@ -52,5 +52,5 @@ void main() {
             }
         }
         fragColor = vec4(vec3(currentState), 1.0);
-    }
+    // }
 }

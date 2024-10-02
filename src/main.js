@@ -8,6 +8,8 @@ import vertexShaderSource from "./shaders/vert.glsl";
 import fragmentShaderSource from "./shaders/frag.glsl";
 import copyShaderSource from "./shaders/copy.glsl";
 
+import tex from "./tex.png"
+
 const canvas = document.querySelector("#glcanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -38,6 +40,7 @@ if (gl === null) {
 	// TEXTURE
 	var texture1 = new Texture(gl, 0);
 	texture1.createEmptyTex(resolution[0], resolution[1]);
+	texture1.createTex(tex,resolution[0], resolution[1]);
 
 	var texture2 = new Texture(gl, 1);
 	texture2.createEmptyTex(resolution[0], resolution[1]);
@@ -83,11 +86,12 @@ if (gl === null) {
 	gl.depthFunc(gl.LEQUAL);
 
 	function renderLoop() {
+
 		// UPDATE
 		currentTime = performance.now();
 		elapsedTime = (currentTime - startTime) / 1000;
 
-		// p1 
+		// p1
 		gl.useProgram(globalShader.program);
 		gl.uniform1f(uTimeLocation, elapsedTime);
 		gl.uniform2f(uMouseLocation, mouseX / resolution[0] / scaleFactor, 1 - mouseY / resolution[1] / scaleFactor);
@@ -114,4 +118,3 @@ if (gl === null) {
 
 	renderLoop();
 }
-
