@@ -20,18 +20,20 @@ vec3 palette( float t ) {
 }
 
 void main() {
+
+	float loopTime = sin(uTime/20.0)*20.0;
     vec2 uv = (gl_FragCoord.xy * 2.0 - uResolution.xy) / uResolution.y;
     vec2 uv0 = uv;
     vec3 finalColor = vec3(0.0);
 
-    for (float i = 0.0; i < 4.0; i++) {
-        uv = (fract(sin(uv*uTime) * 0.1) - 0.5);
+    for (float i = 0.0; i < 2.0; i++) {
+        uv = (fract(sin(uv*loopTime) * 0.2) - 0.5);
 
         float d = length(uv) * exp(-length(uv0));
 
         vec3 col = palette(length(uv0) + i*.4 + uTime*.4);
 
-        d = sin(d*8. + uTime)/8.;
+        d = sin(d*8. + sin(loopTime)+cos(loopTime))/11.;
         d = abs(d);
 
         d = pow(0.01 / d, 1.2);

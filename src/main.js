@@ -4,7 +4,7 @@ import { Frame } from "./Model";
 import { keys, mouseX, mouseY } from "./Input";
 
 import vertexShaderSource from "./shaders/vert.glsl";
-import fragmentShaderSource from "./shaders/sdf.glsl";
+import fragmentShaderSource from "./shaders/frag.glsl";
 
 // import sampleTexture from "./tex2.jpg";
 
